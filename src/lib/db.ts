@@ -1,11 +1,10 @@
-
-import { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
+import { type DuckDBConnection, DuckDBInstance } from "@duckdb/node-api";
 
 let dbInstance: DuckDBInstance | null = null;
 
 export async function getDB() {
   if (!dbInstance) {
-    dbInstance = await DuckDBInstance.create('data/ai-log-analyzer.duckdb');
+    dbInstance = await DuckDBInstance.create("data/ai-log-analyzer.duckdb");
     const connection = await dbInstance.connect();
     await initDB(connection);
     // Note: We keep the connection open implicitly or just let it be garbage collected if not stored?

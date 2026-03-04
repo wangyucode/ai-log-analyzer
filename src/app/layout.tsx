@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
+import { Navbar } from "@/components/Navbar";
 
 const notoSansSC = Noto_Sans_SC({
   variable: "--font-noto-sans-sc",
@@ -20,7 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${notoSansSC.variable} antialiased`}>{children}</body>
+      <body
+        className={`${notoSansSC.variable} antialiased min-h-screen bg-zinc-50 dark:bg-black`}
+      >
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }

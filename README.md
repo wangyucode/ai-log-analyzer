@@ -48,6 +48,13 @@ services:
     environment:
       - OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxx
 ```
+## Get started / 快速开始
+
+```bash
+pnpm dev
+```
+
+The application will be available at <http://localhost:3000>.
 
 ## 🔧 Technologies Stack / 技术栈
 
@@ -55,6 +62,7 @@ services:
 - **Language/语言**: TypeScript <https://www.typescriptlang.org/>
 - **UI Components/UI组件**: shadcn/ui <https://ui.shadcn.com/>
 - **Styling/样式**: Tailwind CSS <https://tailwindcss.com/>
+- **Testing/测试**: Vitest <https://vitest.dev/>
 - **Charts/图表**: Apache ECharts <https://echarts.apache.org/>
 - **Database/数据库**: DuckDB <https://duckdb.org/>
 - **State Management/状态管理**: Zustand <https://zustand-demo.pmnd.rs/>

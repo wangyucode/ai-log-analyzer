@@ -4,3 +4,4 @@
 2. **简写规则**: `if` 内仅单行代码时，使用单行简写，例如: `if(earlyReturn) return;`。
 3. **技术栈**: Next.js, TypeScript, Tailwind CSS, shadcn/ui, DuckDB, Zustand, Vercel AI SDK, Vitest。
 4. **需求文档**： 需求不明确时，可以查看 `doc/requirements.md` 中的需求描述。
+5. **代码质量**: 所有代码需通过pnpm lint和pnpm test检查。

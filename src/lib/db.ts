@@ -21,17 +21,15 @@ export async function getDB() {
 
 async function initDB(conn: DuckDBConnection) {
   await conn.run(`
-    CREATE SEQUENCE IF NOT EXISTS log_files_id_seq;
     CREATE TABLE IF NOT EXISTS log_files (
-      id INTEGER PRIMARY KEY DEFAULT nextval('log_files_id_seq'),
-      file_path TEXT NOT NULL,
+      file TEXT PRIMARY KEY,
       table_name TEXT,
       parser_script TEXT,
       last_read_offset UBIGINT,
       create_sql TEXT,
       insert_sql TEXT,
       retention_days INTEGER,
-      status TEXT CHECK (status IN ('UNINITIALIZED', 'PARSING', 'READY', 'ERROR')),
+      status TEXT CHECK (status IN ('UNINITIALIZED', 'READY')),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);

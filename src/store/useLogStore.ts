@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
 
 interface LogFile {
   name: string;
@@ -15,29 +16,31 @@ interface LogStore {
   setSelectedLog: (logName: string | null) => void;
 }
 
-export const useLogStore = create<LogStore>((set) => ({
-  selectedLog: null,
-  logFiles: [],
-  isLoading: false,
-  error: null,
-  fetchLogFiles: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await fetch("/api/logs/files");
-      if (!response.ok) {
-        throw new Error("Failed to fetch log files");
+export const useLogStore = create<LogStore>()(
+  subscribeWithSelector((set) => ({
+    selectedLog: null,
+    logFiles: [],
+    isLoading: false,
+    error: null,
+    fetchLogFiles: async () => {
+      set({ isLoading: true, error: null });
+      try {
+        const response = await fetch("/api/logs/files");
+        if (!response.ok) {
+          throw new Error("Failed to fetch log files");
+        }
+        const data = await response.json();
+        const files = data.files || [];
+        set((state) => ({
+          logFiles: files,
+          isLoading: false,
+          selectedLog:
+            state.selectedLog || (files.length > 0 ? files[0].name : null),
+        }));
+      } catch (error) {
+        set({ error: (error as Error).message, isLoading: false });
       }
-      const data = await response.json();
-      const files = data.files || [];
-      set((state) => ({
-        logFiles: files,
-        isLoading: false,
-        selectedLog:
-          state.selectedLog || (files.length > 0 ? files[0].name : null),
-      }));
-    } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
-    }
-  },
-  setSelectedLog: (logName) => set({ selectedLog: logName }),
-}));
+    },
+    setSelectedLog: (logName) => set({ selectedLog: logName }),
+  })),
+);

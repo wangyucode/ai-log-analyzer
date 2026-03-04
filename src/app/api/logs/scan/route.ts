@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { getDB } from '@/lib/db';
 
 export async function GET() {
+  // Ensure database is initialized
+  await getDB();
+  
   const logsDir = path.join(process.cwd(), 'logs');
 
   try {

@@ -24,8 +24,8 @@
 - [x] **验证**: 访问 API 能返回文件列表 JSON。
 
 ### 2.2 数据库：日志元数据表 (`log_files`)
-- [ ] **任务**: 在应用启动或首次访问时，初始化 SQLite/DuckDB 中的 `log_files` 表 (id, file_path, status, etc.)。
-- [ ] **验证**: 查询数据库确认表已创建。
+- [x] **任务**: 在应用启动或首次访问时，初始化 SQLite/DuckDB 中的 `log_files` 表 (id, file_path, status, etc.)。
+- [x] **验证**: 查询数据库确认表已创建。
 
 ### 2.3 前端：日志状态管理 (Zustand)
 - [ ] **任务**: 创建 `store/useLogStore.ts`，管理当前选中的日志文件和文件列表。

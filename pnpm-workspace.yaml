@@ -1,6 +1,4 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
-
-onlyBuiltDependencies:
-  - duckdb
+allowBuilds:
+  "@duckdb/node-api": true
+  "esbuild": true
+  "sharp": true 

@@ -1,53 +1,23 @@
-# AI-Enhanced Log Analyzer / AI 驱动的日志分析器
+# AI-Powered Data Visualizer / AI 驱动的数据可视化工具
 
-A modern, full-stack Next.js application that leverages AI to parse, analyze, and visualize any application(like Nginx, Caddy) structured logs. It transforms raw log data into valuable data visualization dashboards through an intelligent, AI-driven workflow.
+A modern, full-stack Next.js application that leverages AI to analyze and visualize data from any database. It transforms raw database records into valuable data visualization dashboards through an intelligent, AI-driven workflow, requiring zero backend or frontend coding.
 
-这是一个现代化的全栈 Next.js 应用，利用 AI 解析、分析和可视化任意应用(如Nginx、Caddy)的结构化日志。它通过智能的AI驱动工作流，将原始日志数据转化为有价值的数据可视化面板。
+这是一个现代化的全栈 Next.js 应用，利用 AI 分析和可视化任意数据库数据，将原始数据库数据转化为有价值的数据可视化面板，而不需要任何后端和前端代码。
 
 ## ✨ Core Features / 核心功能
 
 ### 🤖 AI-Powered Analysis / AI 智能分析:
 
-- AI automatically analyzes log formats and generates parsing functions.
-- Provides visualization suggestions based on data.
+- Supports analysis and visualization of data from any database.
+- Provides visualization suggestions based on data via AI.
 - Generates custom visualization charts through natural language conversation with AI.
 - You decide which AI-generated visualization charts to save to your dashboard.
 
-- AI自动分析日志格式并生成解析函数。
+- 支持任意数据库数据的分析和可视化。
 - 由AI根据数据提供可视化建议。
 - 使用自然语言和AI对话生成自定义的可视化图表。
 - 由您决定将哪些 AI 生成的可视化图表保存到仪表盘。
 
-## 🛠 Deployment / 部署
-
-Recommended for convenient deployment using Docker and Docker Compose.
-
-推荐使用 Docker 和 Docker Compose 进行便捷部署。
-
-### Docker
-
-```bash
-docker run -d -p 3000:3000 -v ./logs:/app/logs -v ./data:/app/data --env OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxx
-```
-
-### Docker Compose file / Docker Compose 配置文件
-
-```yml
-version: "3.8"
-
-services:
-  app:
-    build: .
-    container_name: ai-log-analyzer
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./logs:/app/logs
-      - ./data:/app/data
-    environment:
-      - OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxx
-```
 ## Get started / 快速开始
 
 ```bash
@@ -56,19 +26,6 @@ pnpm dev
 
 The application will be available at <http://localhost:3000>.
 
-## 🗺️ Roadmap / 路线图
-
-### Phase 1: MVP (Current Focus / 当前关注)
-- [ ] **Log File Management**: Automatic discovery of log files in the `logs` directory.
-- [ ] **Simplified Initialization**: Built-in support for **Caddy JSON Access Log** parsing (Skipping AI analysis for MVP).
-- [ ] **Interactive Dashboard**: Grid layout with support for custom views.
-- [ ] **AI-Powered Visualization**: Generate SQL and charts via natural language conversation.
-
-### Phase 2: Enhanced AI Automation (Future / 未来规划)
-- [ ] **Full AI Initialization**: Automatically analyze arbitrary log structures and generate parsers using AI.
-- [ ] **Universal Log Support**: Support for Nginx, Apache, and custom log formats via AI learning.
-- [ ] **Advanced Data Import**: Intelligent `CREATE TABLE` and `INSERT` generation.
-
 ## 🔧 Technologies Stack / 技术栈
 
 - **Framework/框架**: Next.js <https://nextjs.org/>
@@ -76,10 +33,10 @@ The application will be available at <http://localhost:3000>.
 - **UI Components/UI组件**: shadcn/ui <https://ui.shadcn.com/>
 - **Styling/样式**: Tailwind CSS <https://tailwindcss.com/>
 - **Testing/测试**: Vitest <https://vitest.dev/>
-- **Charts/图表**: Apache ECharts <https://echarts.apache.org/>
-- **Database/数据库**: DuckDB <https://duckdb.org/>
+- **Charts/图表**: Vega-Lite <https://vega.github.io/vega-lite/>
+- **Database/数据库**: SQLite <https://www.sqlite.org/>
+- **SQL query builder/SQL 查询构建器**: knex.js <https://knexjs.org/>
 - **State Management/状态管理**: Zustand <https://zustand-demo.pmnd.rs/>
 - **AI Interaction/AI交互**: Vercel AI SDK <https://vercel.com/docs/ai-sdk>
-- **File Watching/文件监控**: Chokidar <https://github.com/paulmillr/chokidar>
 - **Package Manager/包管理器**: pnpm <https://pnpm.io/>
 - **Containerization/容器化**: Docker & Docker Compose

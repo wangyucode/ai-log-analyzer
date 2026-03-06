@@ -1,5 +1,5 @@
 {
-  "name": "ai-log-analyzer",
+  "name": "ai-generated-dashboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,10 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@duckdb/node-api": "1.4.4-r.3",
     "@radix-ui/react-slot": "^1.2.4",
     "ai": "^6.0.111",
-    "chokidar": "^5.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "echarts": "^6.0.0",

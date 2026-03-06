@@ -10,9 +10,9 @@ const notoSansSC = Noto_Sans_SC({
 });
 
 export const metadata: Metadata = {
-  title: "AI Log Analyzer",
+  title: "AI Generated Dashboard",
   description:
-    "Transforms raw log data into valuable data visualization dashboards through an intelligent, AI-driven workflow.",
+    "Transforms raw database data into valuable data visualization dashboards through an intelligent, AI-driven workflow.",
 };
 
 export default function RootLayout({

@@ -57,11 +57,11 @@
 | 字段 | 类型 | 描述 |
 | :--- | :--- | :--- |
 | id | INTEGER PK | 自增 ID |
-| type | TEXT | 数据库类型 (sqlite, mysql, csv, etc.) |
-| connection_info | JSON | 连接字符串或文件路径 |
+| type | TEXT | 数据库类型 (sqlite, mysql, etc.) |
+| connection_info | JSON | 连接配置信息 |
 | name | TEXT | 数据源别名 |
-| schema_snapshot | JSON | AI 分析后的结构快照 |
-| status | TEXT | CONNECTED, ERROR |
+| database | TEXT | 数据库名称 |
+| table_count | INTEGER | 数据库中的表数量 |
 | created_at | DATETIME | 创建时间 |
 
 #### `views` (视图配置表)

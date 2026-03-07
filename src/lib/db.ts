@@ -1,4 +1,6 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: global has no type */
+
+import fs from "node:fs";
 import path from "node:path";
 import knex, { type Knex } from "knex";
 
@@ -7,12 +9,17 @@ import knex, { type Knex } from "knex";
  * 该数据库用于存储仪表盘配置、AI 分析结果等
  */
 
+const dbPath = path.join(process.cwd(), "data");
+if (!fs.existsSync(dbPath)) {
+  fs.mkdirSync(dbPath, { recursive: true });
+}
+
 const db: Knex =
   (global as any).db ||
   knex({
     client: "better-sqlite3",
     connection: {
-      filename: path.join(process.cwd(), "data", "meta.db"),
+      filename: path.join(dbPath, "meta.db"),
     },
     useNullAsDefault: true,
   });

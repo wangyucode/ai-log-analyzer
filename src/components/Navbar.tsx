@@ -1,7 +1,6 @@
 import { Terminal } from "lucide-react";
 
 export function Navbar() {
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white dark:bg-black/80 backdrop-blur-md">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">

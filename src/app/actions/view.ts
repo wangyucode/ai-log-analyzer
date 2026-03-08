@@ -11,7 +11,7 @@ export async function getViews(dataSourceId: number) {
     const views = await db("views")
       .where("data_source_id", dataSourceId)
       .orderBy("created_at", "desc");
-    
+
     return {
       success: true,
       data: views,
@@ -39,7 +39,7 @@ export async function saveView(viewData: {
   try {
     await initDatabase();
     const [id] = await db("views").insert(viewData);
-    
+
     return {
       success: true,
       data: { id, ...viewData },

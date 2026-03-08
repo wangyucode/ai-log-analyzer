@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.118",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-slot": "^1.2.4",
     "ai": "^6.0.111",

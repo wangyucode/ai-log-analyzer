@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Database, MapPin, Table } from "lucide-react";
+import { Calendar, Database, Table } from "lucide-react";
 import type { DataSource } from "@/types/database";
 
 interface DataSourceInfoProps {

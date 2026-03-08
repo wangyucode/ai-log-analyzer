@@ -94,7 +94,6 @@ export async function initDatabase() {
         table.increments("id").primary();
         table.integer("data_source_id").unsigned().notNullable();
         table.string("title").notNullable();
-        table.string("type").notNullable().defaultTo("table"); // table or chart.
         table.text("description");
         table.text("query_sql").notNullable();
         table.integer("layout_w").defaultTo(1);

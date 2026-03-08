@@ -3,16 +3,16 @@
 import { useChat } from "@ai-sdk/react";
 import {
   AlertCircle,
-  Check,
   ChevronLeft,
-  Layout,
   Loader2,
   Send,
   Sparkles,
+  Square,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { saveView } from "@/app/actions/view";
 import { Markdown } from "@/components/Markdown";
+import { GenerateViewPreview } from "@/components/messages/GenerateViewPreview";
 import { RunSqlMessage } from "@/components/messages/RunSqlMessage";
 import { ThinkingProcess } from "@/components/messages/ThinkingProcess";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,9 @@ interface AIChatStepProps {
   onCancel: () => void;
 }
 
-interface GenerateViewArgs {
+export interface GenerateViewArgs {
   toolCallId: string;
   title: string;
-  type: string;
   description?: string;
   query_sql: string;
   viz_config: string;
@@ -47,7 +46,7 @@ export function AIChatStep({
   const [isSaving, setIsSaving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, error } = useChat();
+  const { messages, sendMessage, status, error, stop } = useChat();
 
   const isLoading = status === "submitted" || status === "streaming";
 
@@ -57,7 +56,7 @@ export function AIChatStep({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, status]);
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     sendMessage(
@@ -83,7 +82,6 @@ export function AIChatStep({
       const result = await saveView({
         data_source_id: currentDataSource.id,
         title: viewData.title,
-        type: viewData.type,
         description: viewData.description,
         query_sql: viewData.query_sql,
         viz_config: viewData.viz_config,
@@ -177,86 +175,16 @@ export function AIChatStep({
                       />
                     );
                   } else if (part.type === "tool-generateView") {
-                    switch (part.state) {
-                      case "input-available":
-                        return (
-                          <div
-                            key={`${m.id}-part-${index}`}
-                            className="my-2 p-4 border rounded-lg bg-primary/5 border-primary/20"
-                          >
-                            <div className="flex items-center gap-2 mb-2 text-primary font-medium">
-                              <Layout className="h-4 w-4" />
-                              <span>正在生成视图配置...</span>
-                            </div>
-                          </div>
-                        );
-                      case "output-available": {
-                        const generateViewArgs =
-                          part.output as GenerateViewArgs;
-                        return (
-                          <div
-                            key={`${m.id}-part-${index}`}
-                            className="my-2 p-4 border rounded-lg bg-primary/5 border-primary/20"
-                          >
-                            <div className="flex items-center gap-2 mb-2 text-primary font-medium">
-                              <Layout className="h-4 w-4" />
-                              <span>拟生成的视图配置</span>
-                            </div>
-                            <div className="space-y-1 mb-4 text-xs text-muted-foreground">
-                              <p>
-                                <span className="font-semibold text-foreground">
-                                  标题:
-                                </span>{" "}
-                                {generateViewArgs.title}
-                              </p>
-                              <p>
-                                <span className="font-semibold text-foreground">
-                                  类型:
-                                </span>{" "}
-                                {generateViewArgs.type}
-                              </p>
-                              {generateViewArgs.description && (
-                                <p>
-                                  <span className="font-semibold text-foreground">
-                                    描述:
-                                  </span>{" "}
-                                  {generateViewArgs.description}
-                                </p>
-                              )}
-                            </div>
-                            <Button
-                              size="sm"
-                              className="w-full"
-                              onClick={() =>
-                                handleSaveView(
-                                  generateViewArgs.toolCallId,
-                                  generateViewArgs,
-                                )
-                              }
-                              disabled={isSaving}
-                            >
-                              {isSaving ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ) : (
-                                <Check className="h-4 w-4 mr-2" />
-                              )}
-                              保存视图到仪表盘
-                            </Button>
-                          </div>
-                        );
-                      }
-                      case "output-error":
-                        return (
-                          <div
-                            key={`${m.id}-part-${index}`}
-                            className="text-destructive text-sm my-2"
-                          >
-                            Error: {part.errorText}
-                          </div>
-                        );
-                      default:
-                        return null;
-                    }
+                    return (
+                      <GenerateViewPreview
+                        key={`${m.id}-part-${index}`}
+                        part={part}
+                        messageId={m.id}
+                        index={index}
+                        onSave={handleSaveView}
+                        isSaving={isSaving}
+                      />
+                    );
                   } else if (part.type === "tool-runSql") {
                     return (
                       <RunSqlMessage
@@ -284,7 +212,17 @@ export function AIChatStep({
         )}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleFormSubmit} className="mt-4 flex gap-2">
+      <form
+        onSubmit={(e) => {
+          if (isLoading) {
+            e.preventDefault();
+            stop();
+            return;
+          }
+          handleFormSubmit(e);
+        }}
+        className="mt-4 flex gap-2"
+      >
         <Button
           type="button"
           variant="outline"
@@ -302,9 +240,16 @@ export function AIChatStep({
           disabled={isLoading}
           className="flex-1"
         />
-        <Button type="submit" disabled={isLoading || !input.trim()}>
+        <Button
+          type="submit"
+          variant={isLoading ? "destructive" : "default"}
+          disabled={!isLoading && !input.trim()}
+          title={isLoading ? "停止生成" : "发送消息"}
+        >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <div className="flex items-center gap-2">
+              <Square className="h-3 w-3 fill-current" />
+            </div>
           ) : (
             <Send className="h-4 w-4" />
           )}

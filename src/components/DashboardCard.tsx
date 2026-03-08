@@ -40,7 +40,7 @@ export function DashboardCard({
       className="flex flex-col h-full group"
     >
       <CardHeader className="p-0 px-6 flex flex-row items-start justify-between space-y-0">
-        <div className="flex flex-col space-y-1 pr-4">
+        <div className="flex flex-col gap-2">
           <CardTitle className="text-sm font-semibold tracking-tight leading-none mt-1">
             {title}
           </CardTitle>

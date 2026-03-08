@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       "1. **理解需求**：仔细阅读用户的问题，结合当前的数据表结构进行思考。\n" +
       "2. **探索数据**：如果需要，使用 `runSql` 工具查询数据以验证你的想法 or 查看数据分布. 请注意 SQL 只能执行 SELECT 查询，且应包含 LIMIT 以节约token和资源。\n" +
       "3. **提出方案**：向用户解释你的分析思路和建议的可视化方案。\n" +
-      "4. **生成视图**：使用 `generateView` 工具生成最终的视图配置。你需要提供标题、描述、SQL 查询、图表类型、布局建议以及 Vega-Lite 配置。\n" +
+      "4. **生成视图**：使用 `generateView` 工具生成最终的视图配置。你需要提供标题、描述、SQL 查询、布局建议以及 Vega-Lite 配置。\n" +
       "\n" +
       "### 关于 Vega-Lite 配置 (viz_config)：\n" +
       "- 使用 standard Vega-Lite JSON 格式。\n" +

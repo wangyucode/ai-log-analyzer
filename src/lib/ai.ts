@@ -57,9 +57,6 @@ const createTools = (dbType: string, connectionInfo: unknown) => ({
     description: "生成数据可视化视图配置",
     inputSchema: z.object({
       title: z.string().describe("视图标题"),
-      type: z
-        .string()
-        .describe("图表类型，如 bar, line, pie, area, scatter, table 等"),
       description: z.string().optional().describe("视图的简短描述"),
       query_sql: z.string().describe("用于获取图表数据的 SQL 查询语句"),
       viz_config: z
@@ -79,7 +76,6 @@ const createTools = (dbType: string, connectionInfo: unknown) => ({
     execute: async (viewData) => {
       logger.info("Generating view configuration", {
         title: viewData.title,
-        type: viewData.type,
       });
       // 这里可以进行简单的校验或直接返回，由前端处理保存逻辑
       return {

@@ -183,6 +183,51 @@ export async function getTableSchemas(
 }
 
 /**
+ * 执行 SQL 语句并返回结果
+ * @param dataSourceId 数据源 ID
+ * @param sql SQL 语句
+ */
+export async function runSql(dataSourceId: number, sql: string) {
+  try {
+    await initDatabase();
+    const dataSource = await db<DataSource>("data_sources")
+      .where("id", dataSourceId)
+      .first();
+
+    if (!dataSource) {
+      throw new Error("数据源不存在");
+    }
+
+    const connectionInfo = JSON.parse(dataSource.connection_info);
+    const targetDb = knex({
+      client: "better-sqlite3",
+      connection: {
+        filename: path.join(dataPath, "db", connectionInfo.file),
+      },
+      useNullAsDefault: true,
+    });
+
+    try {
+      // 执行 SQL
+      const result = await targetDb.raw(sql);
+      return {
+        success: true,
+        data: result,
+      };
+    } finally {
+      await targetDb.destroy();
+    }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "SQL 执行失败";
+    console.error("Failed to run SQL:", error, sql);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
  * 删除数据源
  * @param id 数据源 ID
  */

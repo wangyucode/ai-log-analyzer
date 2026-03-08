@@ -49,6 +49,7 @@ export async function initDatabase() {
       table.increments("id").primary();
       table.integer("data_source_id").unsigned().notNullable();
       table.string("title").notNullable();
+      table.string("type").notNullable().defaultTo("bar"); // chart type: bar, line, pie, etc.
       table.text("description");
       table.text("query_sql").notNullable();
       table.integer("layout_w").defaultTo(1);
@@ -62,6 +63,14 @@ export async function initDatabase() {
         .references("data_sources.id")
         .onDelete("CASCADE");
     });
+  } else {
+    // 检查并添加 type 字段（如果不存在）
+    const hasType = await db.schema.hasColumn("views", "type");
+    if (!hasType) {
+      await db.schema.table("views", (table) => {
+        table.string("type").notNullable().defaultTo("bar");
+      });
+    }
   }
 }
 

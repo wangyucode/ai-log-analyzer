@@ -32,9 +32,12 @@ export async function getViews(dataSourceId: number) {
 export async function saveView(viewData: {
   data_source_id: number;
   title: string;
+  type: string;
   description?: string;
   query_sql: string;
   viz_config: string;
+  layout_w?: number;
+  layout_h?: number;
 }) {
   try {
     await initDatabase();

@@ -3,12 +3,15 @@
 import { useChat } from "@ai-sdk/react";
 import {
   AlertCircle,
+  Check,
   ChevronLeft,
+  Layout,
   Loader2,
   Send,
   Sparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { saveView } from "@/app/actions/view";
 import { Markdown } from "@/components/Markdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,9 +24,14 @@ interface AIChatStepProps {
   onCancel: () => void;
 }
 
-export function AIChatStep({ selectedTables, onBack }: AIChatStepProps) {
+export function AIChatStep({
+  selectedTables,
+  onBack,
+  onCancel,
+}: AIChatStepProps) {
   const { currentDataSource } = useDataSourceStore();
   const [input, setInput] = useState("帮我分析这些数据表");
+  const [isSaving, setIsSaving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, error } = useChat();
@@ -34,7 +42,7 @@ export function AIChatStep({ selectedTables, onBack }: AIChatStepProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: trigger on messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, status]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +57,36 @@ export function AIChatStep({ selectedTables, onBack }: AIChatStepProps) {
       },
     );
     setInput("");
+  };
+
+  const handleSaveView = async (toolCallId: string, viewData: any) => {
+    if (!currentDataSource) return;
+    setIsSaving(true);
+    try {
+      const result = await saveView({
+        data_source_id: currentDataSource.id,
+        title: viewData.title,
+        type: viewData.type,
+        description: viewData.description,
+        query_sql: viewData.query_sql,
+        viz_config: viewData.viz_config,
+        layout_w: viewData.layout_w,
+        layout_h: viewData.layout_h,
+      });
+
+      if (result.success) {
+        onCancel(); // Close the dialog on success
+        // You might want to refresh the view list here, but since it's a server action + revalidatePath (not yet added), we just close for now.
+        window.location.reload(); // Simple way to refresh
+      } else {
+        alert(result.error || "保存失败");
+      }
+    } catch (err) {
+      console.error("Failed to save view:", err);
+      alert("保存出错");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -85,10 +123,10 @@ export function AIChatStep({ selectedTables, onBack }: AIChatStepProps) {
           <div
             key={m.id}
             className={cn(
-              "flex w-max max-w-[85%] flex-col gap-2 rounded-lg px-3 py-2 text-sm break-words",
+              "flex w-full flex-col gap-2 rounded-lg px-3 py-2 text-sm break-words",
               m.role === "user"
-                ? "ml-auto bg-primary text-primary-foreground"
-                : "bg-background border shadow-sm",
+                ? "ml-auto max-w-[85%] bg-primary text-primary-foreground"
+                : "bg-background border shadow-sm max-w-[95%]",
             )}
           >
             <div className="flex items-center gap-2">
@@ -109,6 +147,128 @@ export function AIChatStep({ selectedTables, onBack }: AIChatStepProps) {
                       role={m.role}
                     />
                   );
+                }
+                if (part.type === "tool-generateView") {
+                  switch (part.state) {
+                    case "input-available":
+                      return (
+                        <div
+                          key={`${m.id}-part-${index}`}
+                          className="my-2 p-4 border rounded-lg bg-primary/5 border-primary/20"
+                        >
+                          <div className="flex items-center gap-2 mb-2 text-primary font-medium">
+                            <Layout className="h-4 w-4" />
+                            <span>正在生成视图配置...</span>
+                          </div>
+                        </div>
+                      );
+                    case "output-available": {
+                      const generateViewArgs = part.output as any;
+                      return (
+                        <div
+                          key={`${m.id}-part-${index}`}
+                          className="my-2 p-4 border rounded-lg bg-primary/5 border-primary/20"
+                        >
+                          <div className="flex items-center gap-2 mb-2 text-primary font-medium">
+                            <Layout className="h-4 w-4" />
+                            <span>拟生成的视图配置</span>
+                          </div>
+                          <div className="space-y-1 mb-4 text-xs text-muted-foreground">
+                            <p>
+                              <span className="font-semibold text-foreground">
+                                标题:
+                              </span>{" "}
+                              {generateViewArgs.title}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-foreground">
+                                类型:
+                              </span>{" "}
+                              {generateViewArgs.type}
+                            </p>
+                            {generateViewArgs.description && (
+                              <p>
+                                <span className="font-semibold text-foreground">
+                                  描述:
+                                </span>{" "}
+                                {generateViewArgs.description}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            className="w-full"
+                            onClick={() =>
+                              handleSaveView(
+                                generateViewArgs.toolCallId,
+                                generateViewArgs,
+                              )
+                            }
+                            disabled={isSaving}
+                          >
+                            {isSaving ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Check className="h-4 w-4 mr-2" />
+                            )}
+                            保存视图到仪表盘
+                          </Button>
+                        </div>
+                      );
+                    }
+                    case "output-error":
+                      return (
+                        <div
+                          key={`${m.id}-part-${index}`}
+                          className="text-destructive text-sm my-2"
+                        >
+                          Error: {part.errorText}
+                        </div>
+                      );
+                    default:
+                      return null;
+                  }
+                }
+
+                if (part.type === "tool-runSql") {
+                  switch (part.state) {
+                    case "input-available":
+                      return (
+                        <div
+                          key={`${m.id}-part-${index}`}
+                          className="my-2 p-2 border rounded bg-muted/50 text-[10px] font-mono"
+                        >
+                          <div className="text-muted-foreground mb-1">
+                            执行 SQL...
+                          </div>
+                        </div>
+                      );
+                    case "output-available":
+                      return (
+                        <div
+                          key={`${m.id}-part-${index}`}
+                          className="my-2 p-2 border rounded bg-muted/50 text-[10px] font-mono"
+                        >
+                          <div className="text-muted-foreground mb-1">
+                            执行 SQL:
+                          </div>
+                          <div className="bg-background p-2 rounded border">
+                            {JSON.stringify(part.output)}
+                          </div>
+                        </div>
+                      );
+                    case "output-error":
+                      return (
+                        <div
+                          key={`${m.id}-part-${index}`}
+                          className="text-destructive text-sm my-2"
+                        >
+                          Error: {part.errorText}
+                        </div>
+                      );
+                    default:
+                      return null;
+                  }
                 }
                 return null;
               })}

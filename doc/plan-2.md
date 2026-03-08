@@ -50,9 +50,9 @@
             *   提供 "保存视图" 按钮。
 
 ### 2.3 视图存储与展示 (View Persistence & Display)
-*   [ ] **任务 6: 完善数据库 Views 表**
-    *   [ ] **文件**: `src/lib/db.ts`
-    *   [ ] **内容**:
+* [x] **任务 6: 完善数据库 Views 表**
+    *   [x] **文件**: `src/lib/db.ts`
+    *   [x] **内容**:
         *   确保 `views` 表包含必要的字段:
             *   `id` (PK)
             *   `data_source_id` (FK)

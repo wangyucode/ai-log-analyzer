@@ -70,9 +70,11 @@
 | id | INTEGER PK | 自增 ID |
 | data_source_id | INTEGER | 关联的数据源 ID |
 | title | TEXT | 视图标题 |
+| type | TEXT | 视图类型 (bar, line, etc.) |
 | description | TEXT | 视图描述 |
 | query_sql | TEXT | 查询 SQL |
 | layout_w | INTEGER | 宽度占位 |
 | layout_h | INTEGER | 高度占位 |
 | layout_order | INTEGER | 排序权重 |
 | viz_config | JSON | 可视化JSON配置 |
+| created_at | DATETIME | 创建时间 |

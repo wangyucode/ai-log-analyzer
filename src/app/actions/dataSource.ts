@@ -47,7 +47,9 @@ export async function addDataSource(payload: { name: string; file: string }) {
 
     let tableCount = 0;
     try {
-      const tables = await targetDb("sqlite_master").where("type", "table");
+      const tables = await targetDb("sqlite_master")
+        .where("type", "table")
+        .whereNot("name", "like", "sqlite_%");
       tableCount = tables.length;
     } finally {
       await targetDb.destroy();
@@ -75,6 +77,52 @@ export async function addDataSource(payload: { name: string; file: string }) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "添加数据源失败";
     console.error("Failed to add data source:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * 获取数据源中的所有表名
+ * @param id 数据源 ID
+ */
+export async function getTables(id: number) {
+  try {
+    await initDatabase();
+    const dataSource = await db<DataSource>("data_sources")
+      .where("id", id)
+      .first();
+
+    if (!dataSource) {
+      throw new Error("数据源不存在");
+    }
+
+    const connectionInfo = JSON.parse(dataSource.connection_info);
+    const targetDb = knex({
+      client: "better-sqlite3",
+      connection: {
+        filename: path.join(dataPath, "db", connectionInfo.file),
+      },
+      useNullAsDefault: true,
+    });
+
+    try {
+      const tables = await targetDb("sqlite_master")
+        .where("type", "table")
+        .whereNot("name", "like", "sqlite_%")
+        .select("name");
+      return {
+        success: true,
+        data: tables.map((t) => t.name),
+      };
+    } finally {
+      await targetDb.destroy();
+    }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "获取表列表失败";
+    console.error("Failed to get tables:", error);
     return {
       success: false,
       error: message,

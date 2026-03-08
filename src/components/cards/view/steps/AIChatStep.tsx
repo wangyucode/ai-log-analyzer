@@ -1,7 +1,6 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import {
   AlertCircle,
   ChevronLeft,
@@ -10,9 +9,11 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Markdown } from "@/components/Markdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useDataSourceStore } from "@/store/useDataSourceStore";
 
 interface AIChatStepProps {
   selectedTables: string[];
@@ -20,15 +21,12 @@ interface AIChatStepProps {
   onCancel: () => void;
 }
 
-export function AIChatStep({ onBack }: AIChatStepProps) {
-  const [input, setInput] = useState("");
+export function AIChatStep({ selectedTables, onBack }: AIChatStepProps) {
+  const { currentDataSource } = useDataSourceStore();
+  const [input, setInput] = useState("帮我分析这些数据表");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
-  });
+  const { messages, sendMessage, status, error } = useChat();
 
   const isLoading = status === "submitted" || status === "streaming";
 
@@ -41,12 +39,40 @@ export function AIChatStep({ onBack }: AIChatStepProps) {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage({ text: input });
+    sendMessage(
+      { text: input },
+      {
+        body: {
+          selectedTables,
+          datasourceId: currentDataSource?.id,
+        },
+      },
+    );
     setInput("");
   };
 
   return (
     <div className="flex flex-col h-full w-full max-w-full overflow-hidden">
+      <div className="mb-4">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm font-medium text-muted-foreground mr-1">
+            已选表格:
+          </span>
+          {selectedTables.map((table) => (
+            <div
+              key={table}
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+            >
+              {table}
+            </div>
+          ))}
+          {selectedTables.length === 0 && (
+            <span className="text-sm text-muted-foreground italic">
+              未选择表格
+            </span>
+          )}
+        </div>
+      </div>
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 border rounded-lg bg-muted/30">
         {messages.length === 0 && (
@@ -73,10 +99,17 @@ export function AIChatStep({ onBack }: AIChatStepProps) {
                 {m.role === "user" ? "你" : "AI 助手"}
               </span>
             </div>
-            <div className="whitespace-pre-wrap break-words leading-relaxed">
+            <div className="leading-relaxed">
               {m.parts.map((part, index) => {
-                if (part.type === "text")
-                  return <span key={`${m.id}-part-${index}`}>{part.text}</span>;
+                if (part.type === "text") {
+                  return (
+                    <Markdown
+                      key={`${m.id}-part-${index}`}
+                      content={part.text}
+                      role={m.role}
+                    />
+                  );
+                }
                 return null;
               })}
               {m.role === "assistant" && m.parts.length === 0 && (

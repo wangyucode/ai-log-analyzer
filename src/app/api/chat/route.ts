@@ -1,4 +1,9 @@
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  hasToolCall,
+  streamText,
+  type UIMessage,
+} from "ai";
 import { createTools, doubao, MODEL_ID } from "@/lib/ai";
 import logger from "@/lib/logger";
 
@@ -19,13 +24,13 @@ export async function POST(req: Request) {
       dbType: string;
     } = await req.json();
 
-    logger.info(
-      { tableCount: selectedTables?.length },
-      "Chat request received",
-    );
+    logger.info("Chat request received", {
+      tableCount: selectedTables?.length,
+    });
 
     const systemMessage =
       "你是一个专业的数据分析专家和可视化专家。你的目标是协助用户分析数据库中的数据，并生成精美、直观的可视化图表。\n" +
+      `当前数据库类型：${dbType}\n` +
       `当前选择的数据表：${selectedTables.join(",")}\n` +
       "### 工作流程：\n" +
       "1. **理解需求**：仔细阅读用户的问题，结合当前的数据表结构进行思考。\n" +
@@ -50,10 +55,20 @@ export async function POST(req: Request) {
       model: doubao(MODEL_ID),
       system: systemMessage,
       messages: await convertToModelMessages(messages),
-      onStepFinish: (step) => {
-        logger.debug({ step }, "AI Step finished");
-      },
       tools,
+      stopWhen: ({ steps }) => {
+        if (!steps?.length) return false;
+        const lastStep = steps[steps.length - 1];
+        if (!lastStep?.content?.length) return false;
+        const lastContent = lastStep.content[lastStep.content.length - 1];
+        if (
+          lastContent.type === "tool-result" &&
+          lastContent.toolName === "generateView" &&
+          (lastContent.output as { success: boolean }).success
+        )
+          return true;
+        return steps.length >= 5;
+      },
     });
 
     return result.toUIMessageStreamResponse();

@@ -13,10 +13,10 @@ export async function getViews(dataSourceId: number) {
       .where("data_source_id", dataSourceId)
       .orderBy("created_at", "desc");
 
-    logger.debug(
-      { dataSourceId, count: views.length },
-      "Views fetched successfully",
-    );
+    logger.debug("Views fetched successfully", {
+      dataSourceId,
+      count: views.length,
+    });
     return {
       success: true,
       data: views,
@@ -45,10 +45,10 @@ export async function saveView(viewData: {
   layout_h?: number;
 }) {
   try {
-    logger.info(
-      { title: viewData.title, dataSourceId: viewData.data_source_id },
-      "Saving new view",
-    );
+    logger.info("Saving new view", {
+      title: viewData.title,
+      dataSourceId: viewData.data_source_id,
+    });
     const db = getMetaDbInstance();
     const [id] = await db("views").insert(viewData);
 

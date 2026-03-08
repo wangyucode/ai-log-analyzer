@@ -35,16 +35,15 @@ export async function getDataSource(): Promise<DataSource | null> {
  */
 export async function addDataSource(payload: { name: string; file: string }) {
   try {
-    logger.info(
-      { name: payload.name, file: payload.file },
-      "Adding new data source",
-    );
+    logger.info("Adding new data source", {
+      name: payload.name,
+      file: payload.file,
+    });
     // 1. 验证 SQLite 路径是否存在
     if (!fs.existsSync(path.join(dataPath, "db", payload.file))) {
-      logger.error(
-        { file: payload.file },
-        "SQLite database file does not exist",
-      );
+      logger.error("SQLite database file does not exist", {
+        file: payload.file,
+      });
       throw new Error(`SQLite 数据库文件不存在: ${payload.file}`);
     }
 
@@ -57,10 +56,10 @@ export async function addDataSource(payload: { name: string; file: string }) {
         .where("type", "table")
         .whereNot("name", "like", "sqlite_%");
       tableCount = tables.length;
-      logger.debug(
-        { file: payload.file, tableCount },
-        "Connected to database and counted tables",
-      );
+      logger.debug("Connected to database and counted tables", {
+        file: payload.file,
+        tableCount,
+      });
     } finally {
       await targetDb.destroy();
     }
@@ -80,7 +79,7 @@ export async function addDataSource(payload: { name: string; file: string }) {
       .where("id", id)
       .first();
 
-    logger.info({ id, name: payload.name }, "Data source added successfully");
+    logger.info("Data source added successfully", { id, name: payload.name });
     revalidatePath("/");
     return {
       success: true,
@@ -88,7 +87,7 @@ export async function addDataSource(payload: { name: string; file: string }) {
     };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "添加数据源失败";
-    logger.error({ error, payload }, "Failed to add data source");
+    logger.error("Failed to add data source", { error, payload });
     return {
       success: false,
       error: message,
@@ -186,12 +185,12 @@ export async function getTableSchemas(
 /**
  * 执行 SQL 语句并返回结果
  * @param dbType 数据库类型
- * @param connection_info 数据库连接信息
+ * @param connectionInfo 数据库连接信息
  * @param sql SQL 语句
  */
 export async function runSqlAction(
   dbType: string,
-  connectionInfo: Record<string, string>,
+  connectionInfo: unknown,
   sql: string,
 ) {
   try {

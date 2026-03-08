@@ -7,25 +7,42 @@ import logger from "@/lib/logger";
 // Initialize the Doubao AI provider
 const doubao = createDoubao({
   apiKey: process.env.DOUBAO_API_KEY,
+  fetch: getAddBodyFetchFunction({
+    reasoning_effort: "low",
+  }),
 });
+
+export function getAddBodyFetchFunction(extraBody: Record<string, any>) {
+  return (url: RequestInfo | URL, options?: RequestInit) => {
+    if (options?.body && Object.keys(extraBody).length > 0) {
+      try {
+        const body = JSON.parse(options.body.toString());
+        Object.assign(body, extraBody);
+        options.body = JSON.stringify(body);
+        logger.info("sending request with body", body);
+      } catch (error) {
+        logger.error("设置额外body参数失败", error);
+      }
+    }
+    return fetch(url, options);
+  };
+}
 
 // Default model ID from environment variables
 const MODEL_ID = process.env.DOUBAO_MODEL_ID || "doubao-seed-2-0-mini-260215";
 
-const createTools = (
-  dbType: string,
-  connectionInfo: Record<string, string>,
-) => ({
+const createTools = (dbType: string, connectionInfo: unknown) => ({
   runSql: tool({
     description: "执行 SQL 查询以获取数据",
     inputSchema: z.object({
       sql: z.string().describe("要执行的查询 SQL 语句，不能是 DML 语句"),
     }),
     execute: async ({ sql }) => {
-      logger.info(
-        { sql, connectionInfo, dbType },
-        "Executing SQL query via tool",
-      );
+      logger.info("Executing SQL query via tool", {
+        sql,
+        connectionInfo,
+        dbType,
+      });
       try {
         const result = await runSqlAction(dbType, connectionInfo, sql);
         logger.debug({ sql, success: result.success }, "SQL query executed");
@@ -60,10 +77,10 @@ const createTools = (
         .describe("视图在网格中的高度占位 (1-4)"),
     }),
     execute: async (viewData) => {
-      logger.info(
-        { title: viewData.title, type: viewData.type },
-        "Generating view configuration",
-      );
+      logger.info("Generating view configuration", {
+        title: viewData.title,
+        type: viewData.type,
+      });
       // 这里可以进行简单的校验或直接返回，由前端处理保存逻辑
       return {
         success: true,

@@ -13,6 +13,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { saveView } from "@/app/actions/view";
 import { Markdown } from "@/components/Markdown";
+import { type SqlResult, SqlResultTable } from "@/components/SqlResultTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,17 @@ interface AIChatStepProps {
   selectedTables: string[];
   onBack: () => void;
   onCancel: () => void;
+}
+
+interface GenerateViewArgs {
+  toolCallId: string;
+  title: string;
+  type: string;
+  description?: string;
+  query_sql: string;
+  viz_config: string;
+  layout_w: number;
+  layout_h: number;
 }
 
 export function AIChatStep({
@@ -60,7 +72,10 @@ export function AIChatStep({
     setInput("");
   };
 
-  const handleSaveView = async (toolCallId: string, viewData: any) => {
+  const handleSaveView = async (
+    _toolCallId: string,
+    viewData: GenerateViewArgs,
+  ) => {
     if (!currentDataSource) return;
     setIsSaving(true);
     try {
@@ -143,7 +158,16 @@ export function AIChatStep({
             </div>
             <div className="leading-relaxed">
               {m.parts.map((part, index) => {
-                if (part.type === "text") {
+                if (part.type === "reasoning") {
+                  return (
+                    <div
+                      key={`${m.id}-part-${index}`}
+                      className="text-xs text-muted-foreground italic bo"
+                    >
+                      {part.text}
+                    </div>
+                  );
+                } else if (part.type === "text") {
                   return (
                     <Markdown
                       key={`${m.id}-part-${index}`}
@@ -151,8 +175,7 @@ export function AIChatStep({
                       role={m.role}
                     />
                   );
-                }
-                if (part.type === "tool-generateView") {
+                } else if (part.type === "tool-generateView") {
                   switch (part.state) {
                     case "input-available":
                       return (
@@ -167,7 +190,7 @@ export function AIChatStep({
                         </div>
                       );
                     case "output-available": {
-                      const generateViewArgs = part.output as any;
+                      const generateViewArgs = part.output as GenerateViewArgs;
                       return (
                         <div
                           key={`${m.id}-part-${index}`}
@@ -243,11 +266,15 @@ export function AIChatStep({
                           className="my-2 p-2 border rounded bg-muted/50 text-[10px] font-mono"
                         >
                           <div className="text-muted-foreground mb-1">
-                            执行 SQL...
+                            正在执行 SQL...
+                            <code className="text-foreground">
+                              {(part.input as { sql: string }).sql}
+                            </code>
                           </div>
                         </div>
                       );
-                    case "output-available":
+                    case "output-available": {
+                      const sqlResult = part.output as SqlResult;
                       return (
                         <div
                           key={`${m.id}-part-${index}`}
@@ -255,12 +282,22 @@ export function AIChatStep({
                         >
                           <div className="text-muted-foreground mb-1">
                             执行 SQL:
+                            <code className="text-foreground">
+                              {(part.input as { sql: string }).sql}
+                            </code>
                           </div>
-                          <div className="bg-background p-2 rounded border">
-                            {JSON.stringify(part.output)}
+                          <div className="bg-background rounded border overflow-hidden max-h-[300px]">
+                            {sqlResult?.success ? (
+                              <SqlResultTable data={sqlResult.data || []} />
+                            ) : (
+                              <div className="text-destructive text-sm p-2">
+                                Error: {sqlResult?.error || "未知错误"}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
+                    }
                     case "output-error":
                       return (
                         <div

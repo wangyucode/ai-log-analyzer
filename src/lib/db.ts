@@ -11,7 +11,7 @@ import logger from "@/lib/logger";
 
 export const dataPath = path.join(process.cwd(), "data");
 if (!fs.existsSync(dataPath)) {
-  logger.info({ dataPath }, "Creating data directory");
+  logger.info("Creating data directory", { dataPath });
   fs.mkdirSync(dataPath, { recursive: true });
 }
 
@@ -38,17 +38,28 @@ export function getMetaDbInstance(): Knex {
  * @param filename SQLite 数据库文件名
  */
 export function getDatasourceDbInstance(
-  connectionInfo: Record<string, string>,
+  connectionInfo: unknown,
   dbType: string,
 ): Knex {
-  logger.debug(
-    { filename: connectionInfo.file, dbType },
-    "Creating new datasource DB instance",
-  );
+  if (
+    dbType !== "sqlite" ||
+    typeof connectionInfo !== "object" ||
+    connectionInfo === null ||
+    !("file" in connectionInfo)
+  ) {
+    throw new Error("Invalid connectionInfo object");
+  }
+  logger.debug("Creating new datasource DB instance", {
+    filename: connectionInfo.file,
+    dbType,
+  });
   return knex({
     client: "better-sqlite3",
     connection: {
-      filename: path.join(dataPath, "db", connectionInfo.file),
+      filename: path.join(dataPath, "db", (connectionInfo as any).file),
+      options: {
+        readonly: true,
+      },
     },
     useNullAsDefault: true,
   });

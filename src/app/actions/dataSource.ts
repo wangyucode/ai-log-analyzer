@@ -131,6 +131,58 @@ export async function getTables(id: number) {
 }
 
 /**
+ * 获取指定表的 Schema (列名、类型)
+ * @param dataSourceId 数据源 ID
+ * @param tableNames 表名列表
+ */
+export async function getTableSchemas(
+  dataSourceId: number,
+  tableNames: string[],
+) {
+  try {
+    await initDatabase();
+    const dataSource = await db<DataSource>("data_sources")
+      .where("id", dataSourceId)
+      .first();
+
+    if (!dataSource) {
+      throw new Error("数据源不存在");
+    }
+
+    const connectionInfo = JSON.parse(dataSource.connection_info);
+    const targetDb = knex({
+      client: "better-sqlite3",
+      connection: {
+        filename: path.join(dataPath, "db", connectionInfo.file),
+      },
+      useNullAsDefault: true,
+    });
+
+    try {
+      const schemas: Record<string, any[]> = {};
+      for (const tableName of tableNames) {
+        const columns = await targetDb.raw(`PRAGMA table_info(${tableName})`);
+        schemas[tableName] = columns;
+      }
+      return {
+        success: true,
+        data: schemas,
+      };
+    } finally {
+      await targetDb.destroy();
+    }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "获取表 Schema 失败";
+    console.error("Failed to get table schemas:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
  * 删除数据源
  * @param id 数据源 ID
  */

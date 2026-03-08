@@ -6,15 +6,15 @@
 ## 2. 详细开发步骤 (Development Steps)
 
 ### 2.1 AI 环境与后端基础 (AI Setup & Backend Foundation)
-*   [ ] **任务 1: AI Provider 配置**
-    *   [ ] **文件**: `.env.local` (需创建), `src/lib/ai.ts` (需创建)
-    *   [ ] **内容**:
+*   [x] **任务 1: AI Provider 配置**
+    *   [x] **文件**: `.env.local` (已创建), `src/lib/ai.ts` (已创建)
+    *   [x] **内容**:
         *   配置 AI SDK (使用 Vercel AI SDK)。
-        *   确定使用的模型 (如 OpenAI GPT-4o, Google Gemini Pro 等，需确认 API Key)。
+        *   准备使用豆包模型，所以需要安装 `doubao-ai-provider` (已安装)。
         *   封装统一的 AI 调用接口。
-*   [ ] **任务 2: 创建 Chat API Route**
-    *   [ ] **文件**: `src/app/api/chat/route.ts`
-    *   [ ] **内容**:
+*   [x] **任务 2: 创建 Chat API Route**
+    *   [x] **文件**: `src/app/api/chat/route.ts` (已创建)
+    *   [x] **内容**:
         *   实现 POST 接口，接收 `messages` (对话历史) 和 `data` (包含 `selectedTables`, `dataSourceId`)。
         *   **System Prompt 构建**:
             *   获取选中表格的 Schema (列名、类型)。
@@ -61,9 +61,9 @@
             *   `config` (JSON, Vega-Lite spec)
             *   `description` (AI 生成的描述)
             *   `created_at`
-*   [ ] **任务 7: 保存视图 Server Action**
-    *   [ ] **文件**: `src/app/actions/view.ts`
-    *   [ ] **内容**:
+*   [x] **任务 7: 保存视图 Server Action**
+    *   [x] **文件**: `src/app/actions/view.ts` (已创建)
+    *   [x] **内容**:
         *   `saveView(viewData)`: 将 AI 生成的配置存入 `views` 表。
         *   `getViews(dataSourceId)`: 获取指定数据源的所有视图。
 *   [ ] **任务 8: Dashboard 集成**

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description:
     "Transforms raw database data into valuable data visualization dashboards through an intelligent, AI-driven workflow.",
   icons: {
-    icon: "/icon.svg",
+    icon: "/logo.png",
   },
 };
 

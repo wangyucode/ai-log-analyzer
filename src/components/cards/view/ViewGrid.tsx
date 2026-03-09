@@ -3,7 +3,9 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { deleteView, getViews } from "@/app/actions/view";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useDataSourceStore } from "@/store/useDataSourceStore";
+import { AdminPasswordDialog } from "../../AdminPasswordDialog";
 import { ViewCard } from "./ViewCard";
 
 interface View {
@@ -21,6 +23,8 @@ export function ViewGrid() {
   const [views, setViews] = useState<View[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isDialogOpen, setIsDialogOpen, withAdminAuth, handleVerified } =
+    useAdminAuth();
 
   useEffect(() => {
     if (!currentDataSource) return;
@@ -46,18 +50,20 @@ export function ViewGrid() {
   }, [currentDataSource]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("确定要删除这个视图吗？")) return;
+    withAdminAuth(async () => {
+      if (!confirm("确定要删除这个视图吗？")) return;
 
-    try {
-      const result = await deleteView(id);
-      if (result.success) {
-        setViews((prev) => prev.filter((v) => v.id !== id));
-      } else {
-        alert(result.error || "删除视图失败");
+      try {
+        const result = await deleteView(id);
+        if (result.success) {
+          setViews((prev) => prev.filter((v) => v.id !== id));
+        } else {
+          alert(result.error || "删除视图失败");
+        }
+      } catch (_e) {
+        alert("删除视图时出错");
       }
-    } catch (_e) {
-      alert("删除视图时出错");
-    }
+    });
   };
 
   const handleUpdate = (updatedView: View) => {
@@ -94,6 +100,12 @@ export function ViewGrid() {
           onUpdate={handleUpdate}
         />
       ))}
+
+      <AdminPasswordDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onVerified={handleVerified}
+      />
     </>
   );
 }

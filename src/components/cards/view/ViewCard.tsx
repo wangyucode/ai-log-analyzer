@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { runSqlAction } from "@/app/actions/dataSource";
 import { DashboardCard } from "@/components/DashboardCard";
 import { VegaChart } from "@/components/VegaChart";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useDataSourceStore } from "@/store/useDataSourceStore";
+import { AdminPasswordDialog } from "../../AdminPasswordDialog";
 import { ViewSettingsDialog } from "./ViewSettingsDialog";
 
 interface View {
@@ -30,6 +32,8 @@ export function ViewCard({ view, onDelete, onUpdate }: ViewCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { isDialogOpen, setIsDialogOpen, withAdminAuth, handleVerified } =
+    useAdminAuth();
 
   useEffect(() => {
     if (!currentDataSource) return;
@@ -66,7 +70,7 @@ export function ViewCard({ view, onDelete, onUpdate }: ViewCardProps) {
         colSpan={view.layout_w}
         rowSpan={view.layout_h}
         onDelete={onDelete}
-        onSettings={() => setIsSettingsOpen(true)}
+        onSettings={() => withAdminAuth(() => setIsSettingsOpen(true))}
       >
         <div className="w-full min-h-[200px] py-4">
           {isLoading ? (
@@ -98,6 +102,12 @@ export function ViewCard({ view, onDelete, onUpdate }: ViewCardProps) {
         onSuccess={(updatedView) => {
           onUpdate?.(updatedView);
         }}
+      />
+
+      <AdminPasswordDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onVerified={handleVerified}
       />
     </>
   );

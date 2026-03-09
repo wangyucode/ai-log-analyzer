@@ -1,55 +1,69 @@
 "use client";
 
 import { deleteDataSource } from "@/app/actions/dataSource";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useDataSourceStore } from "@/store/useDataSourceStore";
+import { AdminPasswordDialog } from "../../AdminPasswordDialog";
 import { DashboardCard } from "../../DashboardCard";
 import { DataSourceInfo } from "./DataSourceInfo";
 import { NoDataSourceFound } from "./NoDataSourceFound";
 
 export function DataSourceManager() {
   const { currentDataSource, setCurrentDataSource } = useDataSourceStore();
+  const { isDialogOpen, setIsDialogOpen, withAdminAuth, handleVerified } =
+    useAdminAuth();
 
   const handleDelete = async () => {
     if (!currentDataSource) return;
 
-    if (
-      !confirm(
-        `确定要删除数据源 "${currentDataSource.name}" 吗？\n此操作将同时删除所有关联的视图。`,
+    withAdminAuth(async () => {
+      if (
+        !confirm(
+          `确定要删除数据源 "${currentDataSource.name}" 吗？\n此操作将同时删除所有关联的视图。`,
+        )
       )
-    )
-      return;
+        return;
 
-    try {
-      const result = await deleteDataSource(currentDataSource.id);
-      if (result.success) {
-        setCurrentDataSource(null);
-      } else {
-        alert(result.error || "删除数据源失败");
+      try {
+        const result = await deleteDataSource(currentDataSource.id);
+        if (result.success) {
+          setCurrentDataSource(null);
+        } else {
+          alert(result.error || "删除数据源失败");
+        }
+      } catch (error) {
+        console.error("Failed to delete data source:", error);
+        alert("删除数据源时发生错误");
       }
-    } catch (error) {
-      console.error("Failed to delete data source:", error);
-      alert("删除数据源时发生错误");
-    }
+    });
   };
 
   return (
-    <DashboardCard
-      title="数据源管理"
-      desc={
-        currentDataSource
-          ? "当前已连接的数据源信息"
-          : "连接数据库以开始 AI 数据分析"
-      }
-      colSpan={1}
-      rowSpan={1}
-      order={-1}
-      onDelete={currentDataSource ? handleDelete : undefined}
-    >
-      {currentDataSource ? (
-        <DataSourceInfo dataSource={currentDataSource} />
-      ) : (
-        <NoDataSourceFound />
-      )}
-    </DashboardCard>
+    <>
+      <DashboardCard
+        title="数据源管理"
+        desc={
+          currentDataSource
+            ? "当前已连接的数据源信息"
+            : "连接数据库以开始 AI 数据分析"
+        }
+        colSpan={1}
+        rowSpan={1}
+        order={-1}
+        onDelete={currentDataSource ? handleDelete : undefined}
+      >
+        {currentDataSource ? (
+          <DataSourceInfo dataSource={currentDataSource} />
+        ) : (
+          <NoDataSourceFound />
+        )}
+      </DashboardCard>
+
+      <AdminPasswordDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onVerified={handleVerified}
+      />
+    </>
   );
 }
